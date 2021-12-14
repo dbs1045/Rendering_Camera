@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 from subprocess import call
-from multiprocessing import Pool, cpu_count 
+from multiprocessing import Pool, Value, cpu_count 
 import gui
 import os
 
@@ -105,46 +105,57 @@ def video_capture():
 
 
 def main():
-    gui.main()
+    
     frame = video_capture()
-    '''color Pencil'''
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    h, s, v = cv2.split(hsv)
+    num, value = gui.main()
     pool = Pool(num_cpu-1)
-    v = pool.map(func = sketch_filter, iterable = [v] )[0]
-    
-    img = cv2.merge((h, s, v))
-    img = cv2.cvtColor(img, cv2.COLOR_HSV2BGR)
-    cv2.imshow("Any KEY", img)
-    cv2.waitKey(0) & 0xFF
-    cv2.destroyWindow("Any KEY")
-    
     '''bold color Pencil'''
-    # pecil_img = pencil_filter(frame)
-    b, g, r = cv2.split(frame)
-    b, g, r = pool.map(func  = sketch_filter, iterable = (b, g, r))
+    if num ==1:
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        h, s, v = cv2.split(hsv)
+        
+        v = pool.map(func = sketch_filter, iterable = [v] )[0]
+        pool.close()
+        pool.join()
+
+        img = cv2.merge((h, s, v))
+        img = cv2.cvtColor(img, cv2.COLOR_HSV2BGR)
+        cv2.imshow("Any KEY", img)
+        cv2.waitKey(0) & 0xFF
+        cv2.destroyWindow("Any KEY")
     
-    bold_color_pencil = cv2.merge((b, g, r))
-    cv2.imshow("Any KEY", bold_color_pencil)
-    cv2.waitKey(0) & 0xFF
-    cv2.destroyWindow("Any KEY")
+    '''color Pencil'''
+    # pecil_img = pencil_filter(frame)
+    if num == 0:
+        b, g, r = cv2.split(frame)
+        b, g, r = pool.map(func  = sketch_filter, iterable = (b, g, r))
+        pool.close()
+        pool.join()
+        bold_color_pencil = cv2.merge((b, g, r))
+        cv2.imshow("Any KEY", bold_color_pencil)
+        cv2.waitKey(0) & 0xFF
+        cv2.destroyWindow("Any KEY")
    
     '''gray sketch filter'''
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    gray = pool.map(func = sketch_filter, iterable=[gray])[0]
-    gray = compute_edge(gray)
-    pool.close()
-    pool.join()
-    cv2.imshow("Any KEY", gray)
+    if num == 2:
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        gray = pool.map(func = sketch_filter, iterable=[gray])[0]
+        gray = compute_edge(gray)
+        pool.close()
+        pool.join()
+        cv2.imshow("Any KEY", gray)
 
-    k = cv2.waitKey(0) & 0xFF
-    cv2.destroyAllWindows()
+        k = cv2.waitKey(0) & 0xFF
+        cv2.destroyAllWindows()
     try:
         targetDirectory = os.path.expanduser('~')+"/Desktop"
         call(["open", targetDirectory])
-        cv2.imwrite(os.path.join(targetDirectory, "bold_color_pencil.jpeg"), img)
-        cv2.imwrite(os.path.join(targetDirectory, "color_pencil.jpeg"), bold_color_pencil)
-        cv2.imwrite(os.path.join(targetDirectory, "pencil_sketch.jpeg"), gray)
+        if num ==1:
+            cv2.imwrite(os.path.join(targetDirectory, "bold_color_pencil.jpeg"), img)
+        elif num == 0:
+            cv2.imwrite(os.path.join(targetDirectory, "color_pencil.jpeg"), bold_color_pencil)
+        elif num == 2:
+            cv2.imwrite(os.path.join(targetDirectory, "pencil_sketch.jpeg"), gray)
     except:
         print("사진저장이 실패하였습니다.")
 if __name__ == "__main__":

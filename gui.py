@@ -12,6 +12,11 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 
 class Ui_MainWindow(object):
+    str = ["Color Pencil","Bold Color Pencil", "Pencil Sketch"]
+    def __init__(self) -> None:
+        self.a = 1
+        self.value = 0
+
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(218, 311)
@@ -20,13 +25,16 @@ class Ui_MainWindow(object):
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton.setGeometry(QtCore.QRect(40, 30, 131, 51))
         self.pushButton.setObjectName("pushButton")
+        self.pushButton.clicked.connect(self.clicked_button1)
         self.pushButton_2 = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton_2.setGeometry(QtCore.QRect(40, 100, 131, 51))
         self.pushButton_2.setObjectName("pushButton_2")
+        self.pushButton_2.clicked.connect(self.clicked_button2)
         self.horizontalSlider = QtWidgets.QSlider(self.centralwidget)
         self.horizontalSlider.setGeometry(QtCore.QRect(30, 200, 160, 22))
         self.horizontalSlider.setOrientation(QtCore.Qt.Horizontal)
         self.horizontalSlider.setObjectName("horizontalSlider")
+        self.horizontalSlider.valueChanged.connect(self.set_value)
         self.label = QtWidgets.QLabel(self.centralwidget)
         self.label.setGeometry(QtCore.QRect(50, 160, 151, 31))
         self.label.setObjectName("label")
@@ -41,7 +49,14 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
-
+    def set_value(self):
+        self.value = self.horizontalSlider.value()
+    def clicked_button1(self):
+        self.a = (self.a-1)%3
+        self.label.setText(self.str[self.a])
+    def clicked_button2(self):
+        self.a = (self.a+1)%3
+        self.label.setText(self.str[self.a])
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
@@ -52,11 +67,16 @@ class Ui_MainWindow(object):
 
 def main():
     import sys
+    
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()
     ui.setupUi(MainWindow)
     MainWindow.show()
     app.exec_()
+    num = (ui.a)%3
+    value = float(ui.value/100)
+    print(value)
+    return [num, value]
     
     
